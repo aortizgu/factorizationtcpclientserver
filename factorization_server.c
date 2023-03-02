@@ -3,6 +3,7 @@
 #include <string.h>
 #include <getopt.h>
 #include "common.h"
+#include "libfactorization.h"
 
 char *server = DEFAULT_SERVER;
 const char *port_str = DEFAULT_PORT_STR;
@@ -45,6 +46,19 @@ int main(int argc, char **argv)
 	check_parameters(argc, argv);
 	printf("server: %s\n", server);
 	printf("port: %d\n", port);
+
+	int factors_len;
+	int *factors;
+	if (factorize(32768, &factors, &factors_len) == 0)
+	{
+		printf("factors: ");
+		for (size_t i = 0; i < factors_len; i++)
+		{
+			printf(" %d ", factors[i]);
+		}
+		printf("\n");
+		free(factors);
+	}
 
 	return 0;
 }

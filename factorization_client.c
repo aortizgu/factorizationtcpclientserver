@@ -3,7 +3,6 @@
 #include <string.h>
 #include <getopt.h>
 #include "common.h"
-#include "libfactorization.h"
 
 #define MAX_NUMBERS 10
 
@@ -93,8 +92,6 @@ int main(int argc, char **argv)
 		printf(" %d", numbers[i]);
 	}
 	printf("\n");
-
-	hello();
 
 	return 0;
 }
