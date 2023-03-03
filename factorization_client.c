@@ -6,11 +6,15 @@
 #include "messageprocessor.h"
 #include "clientconnection.h"
 
+#ifdef DEBUG
+#define D(x) x
+#else
+#define D(x)
+#endif
 #define MAX_NUMBERS 10
 #define MAX_FACTORIZABLE_NUMBER 50000
 
 static char *server = DEFAULT_SERVER;
-static const char *port_str = DEFAULT_PORT_STR;
 static unsigned short port = DEFAULT_PORT;
 static unsigned short numbers[MAX_NUMBERS];
 static int numbers_count = 0;

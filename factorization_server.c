@@ -5,12 +5,18 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <limits.h>
+
 #include "common.h"
 #include "libfactorization.h"
 #include "thpool.h"
 #include "messageprocessor.h"
 #include "serverconnection.h"
 
+#ifdef DEBUG
+#define D(x) x
+#else
+#define D(x)
+#endif
 #define SERVER_THPOOL_SIZE 10
 
 const char *port_str = DEFAULT_PORT_STR;
@@ -46,7 +52,7 @@ static void check_parameters(int argc, char **argv)
 
 static void start_server()
 {
-    printf("start_server\n");
+    D(printf("start_server\n"));
 
     server_thpool = thpool_init(SERVER_THPOOL_SIZE);
     int new_socket_fd;
@@ -132,14 +138,14 @@ static void start_server()
 
 static void signal_handler(int signal_number)
 {
-    printf("signal_handler: signal %d\n", signal_number);
+    D(printf("signal_handler: signal %d\n", signal_number));
 
-    printf("signal_handler: start destroy threads\n");
+    D(printf("signal_handler: start destroy threads\n"));
     thpool_destroy(server_thpool);
 
     if (server_socket_fd != -1)
     {
-        printf("signal_handler: closing server server_socket_fd\n");
+        D(printf("signal_handler: closing server server_socket_fd\n"));
         close(server_socket_fd);
     }
     exit(0);
@@ -149,20 +155,6 @@ int main(int argc, char **argv)
 {
     check_parameters(argc, argv);
     printf("port: %d\n", port);
-
-    // int factors_len;
-    // unsigned short *factors;
-    // if (factorize(USHRT_MAX, &factors, &factors_len) == 0)
-    // {
-    //     printf("factors: factors_len %d, [", factors_len);
-    //     for (size_t i = 0; i < factors_len; i++)
-    //     {
-    //         printf(" %d ", factors[i]);
-    //     }
-    //     printf("]\n");
-    //     free(factors);
-    // }
-
     start_server();
     return 0;
 }
