@@ -1,0 +1,4 @@
+#ifndef _RESPONSEMESSAGE_
+#define _RESPONSEMESSAGE_
+
+#endif

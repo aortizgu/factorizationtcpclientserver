@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "common.h"
+#include "messageprocessor.h"
 
 #define MAX_NUMBERS 10
 #define MAX_FACTORIZABLE_NUMBER 50000
@@ -83,14 +84,15 @@ static void check_parameters(int argc, char **argv)
 
 void create_connection()
 {
-    int server_port, socket_fd;
+    char *buff;
+    int server_port, socket_fd, buff_len, n;
     struct hostent *server_host;
     struct sockaddr_in server_address;
 
     server_host = gethostbyname(server);
     if (server_host == NULL)
     {
-        fprintf(stderr, "cannot get host from %s\n", server);
+        fprintf(stderr, "create_connection: cannot get host from %s\n", server);
         exit(1);
     }
 
@@ -100,7 +102,7 @@ void create_connection()
     unsigned int i = 0;
     if (server_host->h_addr_list[0] == NULL)
     {
-        fprintf(stderr, "cannot get ip from %s\n", server);
+        fprintf(stderr, "create_connection: cannot get ip from %s\n", server);
         exit(1);
     }
 
@@ -109,14 +111,14 @@ void create_connection()
     /* Create TCP socket. */
     if ((socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        perror("socket");
+        perror("create_connection: socket");
         exit(1);
     }
 
     /* Connect to socket with server address. */
     if (connect(socket_fd, (struct sockaddr *)&server_address, sizeof server_address) == -1)
     {
-        perror("connect");
+        perror("create_connection: connect");
         exit(1);
     }
 
@@ -124,7 +126,43 @@ void create_connection()
      * write(socket_fd,,) and read(socket_fd,,) to send and receive messages
      * with the client.
      */
+    requestmessage rqst_message = rqtmsg_init(numbers, numbers_count);
+    if (rqst_message == NULL)
+    {
+        fprintf(stderr, "create_connection: cannot allocate memory for requestmessage\n");
+        exit(1);
+    }
 
+    if (rqtmsg_serialize(rqst_message, &buff, &buff_len) != 0)
+    {
+        fprintf(stderr, "create_connection: cannot allocate memory for buff\n");
+        exit(1);
+    }
+    rqtmsg_destroy(rqst_message);
+
+#if 1
+    for (size_t i = 0; i < 4; i++)
+    {
+        n = write(socket_fd, buff, buff_len);
+        printf("create_connection: written %d bytes\n", n);
+        if (n != buff_len)
+        {
+            fprintf(stderr, "create_connection: has not been possible to write all data\n");
+            exit(1);
+        }
+    }
+
+#else
+    // ToDo: write in loop
+    n = write(socket_fd, buff, buff_len);
+    printf("create_connection: written %d bytes\n", n);
+    if (n != buff_len)
+    {
+        fprintf(stderr, "create_connection: has not been possible to write all data\n");
+        exit(1);
+    }
+#endif
+    free(buff);
     close(socket_fd);
 }
 
