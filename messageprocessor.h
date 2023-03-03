@@ -14,22 +14,29 @@ typedef struct rqtmsg_
 } rqtmsg_;
 typedef struct rqtmsg_ *requestmessage;
 
+typedef struct rspmsg_
+{
+    unsigned short *factors;
+    unsigned char factors_len;
+    unsigned short number;
+} rspmsg_;
 typedef struct rspmsg_ *responsemessage;
 
 typedef struct msg_ *message;
 typedef struct msgprocessor_ *messageprocessor;
-
-responsemessage rspmsg_init();
-responsemessage rspmsg_init_from_msg(message);
-void rspmsg_destroy(message);
 
 requestmessage rqtmsg_init(unsigned short *numbers, int numbers_len);
 int rqtmsg_serialize(requestmessage, char **buffer, int *buff_len);
 requestmessage rqtmsg_init_from_msg(message);
 void rqtmsg_destroy(requestmessage);
 
+responsemessage rspmsg_init(unsigned short number, unsigned short *factors, int factors_len);
+int rspmsg_serialize(responsemessage, char **buffer, int *buff_len);
+responsemessage rspmsg_init_from_msg(message);
+void rspmsg_destroy(responsemessage);
+
 void msg_destroy(message);
-int msg_get_msg_type(message);
+unsigned char msg_get_msg_type(message);
 
 messageprocessor msgprocessor_init();
 void msgprocessor_destroy(messageprocessor);

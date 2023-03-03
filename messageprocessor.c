@@ -10,9 +10,11 @@
 #define BUFFER_SIZE 1024
 #define MSG_LEN_SIZE sizeof(uint32_t)
 #define MSG_TYPE_SIZE sizeof(uint8_t)
-#define HEADER_SIZE MSG_LEN_SIZE + MSG_TYPE_SIZE
+#define MSG_HEADER_SIZE MSG_LEN_SIZE + MSG_TYPE_SIZE
 
 #define REQUEST_MSG_HEADER_SIZE sizeof(uint8_t)
+
+#define RESPONSE_MSG_HEADER_NUMBER_SIZE sizeof(uint16_t)
 
 typedef struct msg_
 {
@@ -50,7 +52,7 @@ rqtmsg_ *rqtmsg_init(unsigned short *numbers, int numbers_len)
 int rqtmsg_serialize(rqtmsg_ *rqtmsg_ptr, char **buffer, int *buff_len)
 {
     int pos = 0;
-    int message_len = HEADER_SIZE + REQUEST_MSG_HEADER_SIZE + rqtmsg_ptr->numbers_len * sizeof(uint16_t);
+    int message_len = MSG_HEADER_SIZE + REQUEST_MSG_HEADER_SIZE + rqtmsg_ptr->numbers_len * sizeof(uint16_t);
     char *message_serialized = malloc(message_len);
     if (message_serialized == NULL)
     {
@@ -139,6 +141,22 @@ void rqtmsg_destroy(rqtmsg_ *rqtmsg_ptr)
         free(rqtmsg_ptr->numbers);
     }
     free(rqtmsg_ptr);
+}
+
+rspmsg_ *rspmsg_init(unsigned short number, unsigned short *factors, int factors_len)
+{
+}
+
+int rspmsg_serialize(rspmsg_ *rspmsg_ptr, char **buffer, int *buff_len)
+{
+}
+
+rspmsg_ *rspmsg_init_from_msg(msg_ *msg_ptr)
+{
+}
+
+void rspmsg_destroy(rspmsg_ *rspmsg_ptr)
+{
 }
 
 static msg_ *msg_init(char *buffer, const int buffer_len)
@@ -250,10 +268,10 @@ static void msgprocessor_slice_messages(msgprocessor_ *msgprocessor_ptr)
     }
 }
 
-int msg_get_msg_type(msg_ *msg_ptr)
+unsigned char msg_get_msg_type(msg_ *msg_ptr)
 {
     unsigned char type;
-    if (msg_ptr->message_len < HEADER_SIZE)
+    if (msg_ptr->message_len < MSG_HEADER_SIZE)
     {
         return -1;
     }

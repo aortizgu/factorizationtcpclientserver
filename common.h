@@ -9,7 +9,6 @@
 #define MAX_FACTORIZABLE_NUMBER 50000
 
 int isNum(char *string);
-// int isValidIpAddress(char *ipAddress);
 int parsePort(char *string);
 
 #endif
