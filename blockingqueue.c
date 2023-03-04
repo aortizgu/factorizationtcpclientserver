@@ -2,13 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common.h"
 #include "blockingqueue.h"
-
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
 
 typedef struct bqueue_
 {
@@ -87,7 +82,7 @@ void dequeue(bqueue_ *bqueue_ptr, void *data_ptr)
     return;
 }
 
-size_t get_size(bqueue_ *bqueue_ptr)
+int get_size(bqueue_ *bqueue_ptr)
 {
     pthread_mutex_lock(&bqueue_ptr->lock);
     int i = 0;

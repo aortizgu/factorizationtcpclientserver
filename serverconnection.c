@@ -5,15 +5,10 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#include "common.h"
 #include "messageprocessor.h"
 #include "serverconnection.h"
 #include "libfactorization.h"
-
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
 
 static void send_response(responsemessage responsemessage_ptr, int socket_fd)
 {

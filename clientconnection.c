@@ -13,12 +13,6 @@
 #include "clientconnection.h"
 #include "blockingqueue.h"
 
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
-
 typedef struct print_results_work_arg_t
 {
     blockingqueue blockingqueue_ptr;

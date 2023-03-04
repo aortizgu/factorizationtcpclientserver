@@ -8,6 +8,12 @@
 #define MAX_NUMBERS 10
 #define MAX_FACTORIZABLE_NUMBER 50000
 
+#ifdef DEBUG
+#define D(x) x
+#else
+#define D(x)
+#endif
+
 int isNum(char *string);
 int parsePort(char *string);
 

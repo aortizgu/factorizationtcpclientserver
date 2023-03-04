@@ -12,11 +12,6 @@
 #include "messageprocessor.h"
 #include "serverconnection.h"
 
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
 #define SERVER_THPOOL_SIZE 10
 
 const char *port_str = DEFAULT_PORT_STR;

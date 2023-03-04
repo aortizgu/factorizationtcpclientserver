@@ -6,11 +6,6 @@
 #include "messageprocessor.h"
 #include "clientconnection.h"
 
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
 #define MAX_NUMBERS 10
 #define MAX_FACTORIZABLE_NUMBER 50000
 

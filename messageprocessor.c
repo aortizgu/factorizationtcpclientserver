@@ -6,13 +6,8 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 
+#include "common.h"
 #include "messageprocessor.h"
-
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
 
 #define BUFFER_SIZE 64
 #define MSG_LEN_SIZE sizeof(uint32_t)
@@ -54,48 +49,6 @@ rqtmsg_ *rqtmsg_init(unsigned short *numbers, int numbers_len)
     }
     memcpy(rqtmsg_ptr->numbers, numbers, sizeof(unsigned short) * numbers_len);
     return rqtmsg_ptr;
-}
-
-int rqtmsg_serialize(rqtmsg_ *rqtmsg_ptr, char **buffer, int *buff_len)
-{
-    int pos = 0;
-    uint32_t network_message_len = 0;
-    uint16_t network_number = 0;
-    uint8_t message_type = 0, network_numbers_len = 0;
-    const int message_len = MSG_HEADER_SIZE + REQUEST_MSG_FIXED_SIZE + rqtmsg_ptr->numbers_len * sizeof(uint16_t);
-
-    char *message_serialized = malloc(message_len);
-    if (message_serialized == NULL)
-    {
-        fprintf(stderr, "rqtmsg_serialize: Could not allocate memory for message\n");
-        return 1;
-    }
-
-    network_message_len = htonl(message_len);
-    memcpy(message_serialized, &network_message_len, sizeof(uint32_t));
-    pos += sizeof(uint32_t);
-
-    message_type = REQUEST_MSG_ID;
-    memcpy(message_serialized + pos, &message_type, sizeof(uint8_t));
-    pos += sizeof(uint8_t);
-
-    network_numbers_len = rqtmsg_ptr->numbers_len;
-    memcpy(message_serialized + pos, &network_numbers_len, sizeof(uint8_t));
-    pos += sizeof(uint8_t);
-
-    for (size_t i = 0; i < rqtmsg_ptr->numbers_len; i++)
-    {
-        network_number = htons(rqtmsg_ptr->numbers[i]);
-        memcpy(message_serialized + pos, &network_number, sizeof(uint16_t));
-        pos += sizeof(uint16_t);
-    }
-    if (pos != message_len)
-    {
-        fprintf(stderr, "rqtmsg_serialize:  check your code\n");
-    }
-    *buffer = message_serialized;
-    *buff_len = message_len;
-    return 0;
 }
 
 rqtmsg_ *rqtmsg_init_from_msg(msg_ *msg_ptr)
@@ -145,6 +98,48 @@ rqtmsg_ *rqtmsg_init_from_msg(msg_ *msg_ptr)
     return rqtmsg_ptr;
 }
 
+int rqtmsg_serialize(rqtmsg_ *rqtmsg_ptr, char **buffer, int *buff_len)
+{
+    int pos = 0;
+    uint32_t network_message_len = 0;
+    uint16_t network_number = 0;
+    uint8_t message_type = 0, network_numbers_len = 0;
+    const int message_len = MSG_HEADER_SIZE + REQUEST_MSG_FIXED_SIZE + rqtmsg_ptr->numbers_len * sizeof(uint16_t);
+
+    char *message_serialized = malloc(message_len);
+    if (message_serialized == NULL)
+    {
+        fprintf(stderr, "rqtmsg_serialize: Could not allocate memory for message\n");
+        return 1;
+    }
+
+    network_message_len = htonl(message_len);
+    memcpy(message_serialized, &network_message_len, sizeof(uint32_t));
+    pos += sizeof(uint32_t);
+
+    message_type = REQUEST_MSG_ID;
+    memcpy(message_serialized + pos, &message_type, sizeof(uint8_t));
+    pos += sizeof(uint8_t);
+
+    network_numbers_len = rqtmsg_ptr->numbers_len;
+    memcpy(message_serialized + pos, &network_numbers_len, sizeof(uint8_t));
+    pos += sizeof(uint8_t);
+
+    for (size_t i = 0; i < rqtmsg_ptr->numbers_len; i++)
+    {
+        network_number = htons(rqtmsg_ptr->numbers[i]);
+        memcpy(message_serialized + pos, &network_number, sizeof(uint16_t));
+        pos += sizeof(uint16_t);
+    }
+    if (pos != message_len)
+    {
+        fprintf(stderr, "rqtmsg_serialize:  check your code\n");
+    }
+    *buffer = message_serialized;
+    *buff_len = message_len;
+    return 0;
+}
+
 void rqtmsg_destroy(rqtmsg_ *rqtmsg_ptr)
 {
     if (rqtmsg_ptr == NULL)
@@ -172,52 +167,6 @@ rspmsg_ *rspmsg_init(unsigned short number, unsigned short *factors, int factors
     }
     memcpy(rspmsg_ptr->factors, factors, sizeof(unsigned short) * factors_len);
     return rspmsg_ptr;
-}
-
-int rspmsg_serialize(rspmsg_ *rspmsg_ptr, char **buffer, int *buff_len)
-{
-    int pos = 0;
-    uint32_t network_message_len = 0;
-    uint16_t network_number = 0, network_factor = 0;
-    uint8_t message_type = 0, network_factors_len = 0;
-    const int message_len = MSG_HEADER_SIZE + RESPONSE_MSG_FIXED_SIZE + rspmsg_ptr->factors_len * sizeof(uint16_t);
-
-    char *message_serialized = malloc(message_len);
-    if (message_serialized == NULL)
-    {
-        fprintf(stderr, "rspmsg_serialize: Could not allocate memory for message\n");
-        return 1;
-    }
-
-    network_message_len = htonl(message_len);
-    memcpy(message_serialized, &network_message_len, sizeof(uint32_t));
-    pos += sizeof(uint32_t);
-
-    message_type = RESPONSE_MSG_ID;
-    memcpy(message_serialized + pos, &message_type, sizeof(uint8_t));
-    pos += sizeof(uint8_t);
-
-    network_number = htons(rspmsg_ptr->number);
-    memcpy(message_serialized + pos, &network_number, sizeof(uint16_t));
-    pos += sizeof(uint16_t);
-
-    network_factors_len = rspmsg_ptr->factors_len;
-    memcpy(message_serialized + pos, &network_factors_len, sizeof(uint8_t));
-    pos += sizeof(uint8_t);
-
-    for (size_t i = 0; i < rspmsg_ptr->factors_len; i++)
-    {
-        network_factor = htons(rspmsg_ptr->factors[i]);
-        memcpy(message_serialized + pos, &network_factor, sizeof(uint16_t));
-        pos += sizeof(uint16_t);
-    }
-    if (pos != message_len)
-    {
-        fprintf(stderr, "rspmsg_serialize:  check your code\n");
-    }
-    *buffer = message_serialized;
-    *buff_len = message_len;
-    return 0;
 }
 
 rspmsg_ *rspmsg_init_from_msg(msg_ *msg_ptr)
@@ -270,6 +219,52 @@ rspmsg_ *rspmsg_init_from_msg(msg_ *msg_ptr)
     return rspmsg_ptr;
 }
 
+int rspmsg_serialize(rspmsg_ *rspmsg_ptr, char **buffer, int *buff_len)
+{
+    int pos = 0;
+    uint32_t network_message_len = 0;
+    uint16_t network_number = 0, network_factor = 0;
+    uint8_t message_type = 0, network_factors_len = 0;
+    const int message_len = MSG_HEADER_SIZE + RESPONSE_MSG_FIXED_SIZE + rspmsg_ptr->factors_len * sizeof(uint16_t);
+
+    char *message_serialized = malloc(message_len);
+    if (message_serialized == NULL)
+    {
+        fprintf(stderr, "rspmsg_serialize: Could not allocate memory for message\n");
+        return 1;
+    }
+
+    network_message_len = htonl(message_len);
+    memcpy(message_serialized, &network_message_len, sizeof(uint32_t));
+    pos += sizeof(uint32_t);
+
+    message_type = RESPONSE_MSG_ID;
+    memcpy(message_serialized + pos, &message_type, sizeof(uint8_t));
+    pos += sizeof(uint8_t);
+
+    network_number = htons(rspmsg_ptr->number);
+    memcpy(message_serialized + pos, &network_number, sizeof(uint16_t));
+    pos += sizeof(uint16_t);
+
+    network_factors_len = rspmsg_ptr->factors_len;
+    memcpy(message_serialized + pos, &network_factors_len, sizeof(uint8_t));
+    pos += sizeof(uint8_t);
+
+    for (size_t i = 0; i < rspmsg_ptr->factors_len; i++)
+    {
+        network_factor = htons(rspmsg_ptr->factors[i]);
+        memcpy(message_serialized + pos, &network_factor, sizeof(uint16_t));
+        pos += sizeof(uint16_t);
+    }
+    if (pos != message_len)
+    {
+        fprintf(stderr, "rspmsg_serialize:  check your code\n");
+    }
+    *buffer = message_serialized;
+    *buff_len = message_len;
+    return 0;
+}
+
 void rspmsg_destroy(rspmsg_ *rspmsg_ptr)
 {
     if (rspmsg_ptr == NULL)
@@ -299,6 +294,31 @@ static msg_ *msg_init(char *buffer, const int buffer_len)
     return msg_ptr;
 }
 
+void msg_destroy(msg_ *msg_ptr)
+{
+    if (msg_ptr == NULL)
+    {
+        return;
+    }
+    free(msg_ptr->message);
+    free(msg_ptr);
+}
+
+unsigned char msg_get_msg_type(msg_ *msg_ptr)
+{
+    if (msg_ptr == NULL)
+    {
+        fprintf(stderr, "msg_get_msg_type: msg_ptr is null\n");
+    }
+    unsigned char type = 0;
+    if (msg_ptr->message_len < MSG_HEADER_SIZE)
+    {
+        return -1;
+    }
+    memcpy(&type, msg_ptr->message + MSG_LEN_SIZE, sizeof(unsigned char));
+    return type;
+}
+
 struct msgprocessor_ *msgprocessor_init()
 {
     msgprocessor_ *msgprocessor_ptr = (struct msgprocessor_ *)malloc(sizeof(struct msgprocessor_));
@@ -320,6 +340,27 @@ struct msgprocessor_ *msgprocessor_init()
     return msgprocessor_ptr;
 }
 
+void msgprocessor_destroy(msgprocessor_ *msgprocessor_ptr)
+{
+    if (msgprocessor_ptr == NULL)
+    {
+        return;
+    }
+    msg_ *tmp = NULL;
+    msg_ *m = msgprocessor_ptr->msg_queue;
+    while (m != NULL)
+    {
+        tmp = m;
+        m = m->next;
+        msg_destroy(tmp);
+    }
+    if (msgprocessor_ptr->buffer != NULL)
+    {
+        free(msgprocessor_ptr->buffer);
+    }
+    free(msgprocessor_ptr);
+}
+
 static void msgprocessor_add_message(msgprocessor_ *msgprocessor_ptr, msg_ *new_message)
 {
     msg_ *current = NULL;
@@ -336,18 +377,6 @@ static void msgprocessor_add_message(msgprocessor_ *msgprocessor_ptr, msg_ *new_
         }
         current->next = new_message;
     }
-}
-
-int msgprocessor_get_message(msgprocessor_ *msgprocessor_ptr, msg_ **new_message)
-{
-    if (msgprocessor_ptr->msg_queue == NULL)
-    {
-        return 1;
-    }
-    msg_ *tmp = msgprocessor_ptr->msg_queue;
-    msgprocessor_ptr->msg_queue = msgprocessor_ptr->msg_queue->next;
-    *new_message = tmp;
-    return 0;
 }
 
 static void msgprocessor_slice_messages(msgprocessor_ *msgprocessor_ptr)
@@ -391,21 +420,6 @@ static void msgprocessor_slice_messages(msgprocessor_ *msgprocessor_ptr)
     }
 }
 
-unsigned char msg_get_msg_type(msg_ *msg_ptr)
-{
-    if (msg_ptr == NULL)
-    {
-        fprintf(stderr, "msg_get_msg_type: msg_ptr is null\n");
-    }
-    unsigned char type = 0;
-    if (msg_ptr->message_len < MSG_HEADER_SIZE)
-    {
-        return -1;
-    }
-    memcpy(&type, msg_ptr->message + MSG_LEN_SIZE, sizeof(unsigned char));
-    return type;
-}
-
 void msgprocessor_add_raw_bytes(msgprocessor_ *msgprocessor_ptr, char *buffer, const int buffer_len)
 {
     while ((msgprocessor_ptr->buffer_capacity - msgprocessor_ptr->buffer_used_len) < buffer_len)
@@ -424,6 +438,18 @@ void msgprocessor_add_raw_bytes(msgprocessor_ *msgprocessor_ptr, char *buffer, c
     msgprocessor_slice_messages(msgprocessor_ptr);
 }
 
+int msgprocessor_get_message(msgprocessor_ *msgprocessor_ptr, msg_ **new_message)
+{
+    if (msgprocessor_ptr->msg_queue == NULL)
+    {
+        return 1;
+    }
+    msg_ *tmp = msgprocessor_ptr->msg_queue;
+    msgprocessor_ptr->msg_queue = msgprocessor_ptr->msg_queue->next;
+    *new_message = tmp;
+    return 0;
+}
+
 int msgprocessor_get_available_messages_count(msgprocessor_ *msgprocessor_ptr)
 {
     if (msgprocessor_ptr == NULL)
@@ -439,35 +465,4 @@ int msgprocessor_get_available_messages_count(msgprocessor_ *msgprocessor_ptr)
         i++;
     }
     return i;
-}
-
-void msg_destroy(msg_ *msg_ptr)
-{
-    if (msg_ptr == NULL)
-    {
-        return;
-    }
-    free(msg_ptr->message);
-    free(msg_ptr);
-}
-
-void msgprocessor_destroy(msgprocessor_ *msgprocessor_ptr)
-{
-    if (msgprocessor_ptr == NULL)
-    {
-        return;
-    }
-    msg_ *tmp = NULL;
-    msg_ *m = msgprocessor_ptr->msg_queue;
-    while (m != NULL)
-    {
-        tmp = m;
-        m = m->next;
-        msg_destroy(tmp);
-    }
-    if (msgprocessor_ptr->buffer != NULL)
-    {
-        free(msgprocessor_ptr->buffer);
-    }
-    free(msgprocessor_ptr);
 }

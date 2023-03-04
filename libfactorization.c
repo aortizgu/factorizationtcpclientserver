@@ -2,15 +2,15 @@
 #include <stdlib.h>
 #include "libfactorization.h"
 
-#define MAX_FACTORS 50
+#define INITIAL_CAPACITY 50
 
 int factorize(unsigned short num, unsigned short **factors, int *factors_len)
 {
     unsigned short *ret = NULL;
     int ret_num = 0;
+    int capacity = INITIAL_CAPACITY;
 
-    // ToDo: start from less allocation and realloc
-    ret = calloc(MAX_FACTORS, sizeof(unsigned long long));
+    ret = calloc(capacity, sizeof(unsigned long long));
     if (ret == NULL)
     {
         fprintf(stderr, "cannot allocate\n");
@@ -23,11 +23,15 @@ int factorize(unsigned short num, unsigned short **factors, int *factors_len)
         if ((num % i) == 0)
         {
             ret[ret_num++] = i;
-            if (ret_num >= MAX_FACTORS)
+            if (ret_num >= capacity)
             {
-                fprintf(stderr, "max number of factors reached\n");
-                free(ret);
-                return 1;
+                capacity += INITIAL_CAPACITY;
+                ret = realloc(ret, capacity);
+                if (ret == NULL)
+                {
+                    fprintf(stderr, "cannot reallocate\n");
+                    return 1;
+                }
             }
             num = num / i;
             continue;
